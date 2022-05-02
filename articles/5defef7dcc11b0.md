@@ -78,7 +78,7 @@ insert into [dbo].[COUPON] (id, name, description, lat, long) values (16, N'San 
 insert into [dbo].[COUPON] (id, name, description, lat, long) values (17, N'Sun Resort', N'お子様の宿泊料金 無料!', 37.42011378366949, -122.08621794214399);
 insert into [dbo].[COUPON] (id, name, description, lat, long) values (18, N'World Square', N'ファッションアイテム全品5%オフ', 37.420587024697895, -122.07994833012899);
 ```
-作成後のDBは伊かのように見えているはず。
+作成後のDBは以下のように見えているはず。
 ![db.png](/images/5defef7dcc11b0/db.png "DBイメージ")
 
 ## Cognitive Search をデプロイ・インデクシング
