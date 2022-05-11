@@ -360,8 +360,8 @@ private async void SearchLocationButton_Clicked(object sender, EventArgs e)
             {
                 // set current location to gpslabel at the bottom of the screen
                 GPSlabel.Text = $"{position.Latitude},{position.Longitude}";
-                // get records from azure search with keyphrase specified 
-                HttpResponseMessage res = await client.GetAsync(Constants.SearchRequestURL + "\"" + keyphrase.Text + "\"" + ",searchFields\"keyphrases\"" + "&api-key=" + Constants.SearchRequestKey);
+                // get records from azure search with keyphrase specified
+                HttpResponseMessage res = await client.GetAsync(Constants.SearchRequestURL + keyphrase.Text + "searchFields=keyphrases&api-key=" + Constants.SearchRequestKey);
                 string content = await res.Content.ReadAsStringAsync();
                 JObject json = JObject.Parse(content);
                 // get records nearby
