@@ -383,7 +383,7 @@ private async void SearchLocationButton_Clicked(object sender, EventArgs e)
 違いとしては、Searchにクエリを投げる以下のREST APIのGET文を修正して、返してもらうクーポン情報を絞り込むだけである。
 ```
 // get records from azure search with keyphrase specified 
-HttpResponseMessage res = await client.GetAsync(Constants.SearchRequestURL + "\"" + keyphrase.Text + "\"" + ",searchFields\"keyphrases\"" + "&api-key=" + Constants.SearchRequestKey);
+HttpResponseMessage res = await client.GetAsync(Constants.SearchRequestURL + keyphrase.Text + "searchFields=keyphrases&api-key=" + Constants.SearchRequestKey);
 ```
 アプリを実行すると、キーワードによる検索機能もきちんと動作し、関連するクーポンだけが表示されていることが分かる。
 ![searchlocation_shibuya_filtering.png](/images/5defef7dcc11b0/searchlocation_shibuya_filtering.png "キーワード検索機能")
