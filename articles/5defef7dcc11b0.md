@@ -43,7 +43,9 @@ published: false
 6. キーワードでフィルタリングしたクーポンを取得・表示
 
 ## DBをデプロイ
-今回は、DBとしてAzure SQL DB を使用する。[こちら](https://docs.microsoft.com/ja-jp/learn/modules/deploy-azure-sql-database/)の公式チュートリアルを参考に usernameとパスワードを設定してデプロイする。テーブルのスキーマは以下のように定義する。
+今回は、DBとしてAzure SQL DB を使用する。[こちら](https://docs.microsoft.com/ja-jp/learn/modules/deploy-azure-sql-database/)の公式チュートリアルを参考に SQL Serverをusernameとパスワードを設定してデプロイする。DBのクエリエディタを使用して、テーブルのスキーマは以下のように定義する。
+
+※SQL ServerのファイアウォールにクライアントIPを入れておかないと弾かれるかもしれないので、適宜追加しておく
 ### テーブルのスキーマ定義
 ```
 CREATE TABLE COUPON
@@ -92,11 +94,11 @@ Cognitive Search をデプロイして、👆のDBをインデクシングする
 - ナレッジストアへのエンリッチメントの保存にて、Azure Tableへのプロジェクションを全選択（適当なストレージアカウントが必要）
 - データのインポートにて、取得可能カラムと検索可能カラムを全選択。また、keyphrasesをフィルタ可能・ファセット可能に選択。（全部が全部使うわけではないが、抜けがあるとインデクサを作成し直すことになるので、広く選択するようにしている。）
 
-クエリを投げると以下のようにjsondで返される。
+クエリを投げると以下のようにjsonで返される。
 ![search.png](/images/5defef7dcc11b0/search.png "Searchイメージ")
 
 ### Constants.cs を共通プロジェクトに作成
-Searchへのクエリを可能にするために、URLとAPIキーを保持する必要があるため、そのためのクラスを追加。
+Searchへのクエリを可能にするために、クエリ先URLとAPIキー（管理者キーではなく、クエリキー）を保持する必要があるため、そのためのクラスを追加。クエリ先URLは作成したインデクサに既定のものだと、`&search=*` 終わりだが、アスタリスクは除いておく。
 ```
 namespace PushDemoAndroid
 {
@@ -120,6 +122,15 @@ static readonly HttpClient client = new HttpClient();
 ```
 ```CurrentLocation_Clicked()```関数を以下のように修正
 ```
+using System;
+using Xamarin.Forms;
+using Xamarin.Essentials;
+using Xamarin.Forms.Maps;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Linq;
+...
 private async void CurrentLocationButton_Clicked(object sender, EventArgs e)
 {
     try
@@ -157,6 +168,18 @@ private async void CurrentLocationButton_Clicked(object sender, EventArgs e)
         Console.WriteLine("Location is not obtained.");
     }
 }
+...
+private void AddPin(string name, string desc, Position position)
+{
+    Pin pin = new Pin
+    {
+        Label = name,
+        Address = desc,
+        Type = PinType.Place,
+        Position = position
+    };
+    map.Pins.Add(pin);
+}
 ```
 見てわかる通り、
 ```
@@ -189,7 +212,7 @@ foreach (JObject item in nearRecords)
 ### GetNearRecords() の実装
 ```position``` 変数付近（座標的に0.005以内であれば、レコードを残すようにしている）
 ```
- private List<Object> GetNearRecords(Position position, JObject json)
+private List<Object> GetNearRecords(Position position, JObject json)
 {
     var nearRecords = new List<Object>();
     foreach (JObject item in json["value"])
@@ -313,10 +336,10 @@ Position position = approximateLocations.FirstOrDefault();
 前項の ```GetNearRecords()``` の後に1行足す。
 ```
 // get trend keyphrase
-Trend.Text = GetNearRecords(nearRecords);
+Trend.Text = getTrendKeyphrase(nearRecords);
 ```
 これにより画面上で表示しているキーワードのラベルを更新している。
-### GetNearRecords()の実装
+### getTrendKeyphrase()の実装
 以下の関数を追加する。
 ```
  private string getTrendKeyphrase(List<object> nearRecords)
